@@ -1,24 +1,27 @@
-# Core dependencies for SmartNougat
-torch>=2.0.0
-torchvision>=0.15.0
-transformers>=4.30.0
-ultralytics>=8.0.0
-PyMuPDF>=1.23.0
-fitz  # PyMuPDF
-loguru>=0.7.0
-Pillow>=10.0.0
-numpy>=1.24.0
-opencv-python>=4.8.0
+# SmartNougat Dependencies
+# Please review LICENSE_NOTICE.md for detailed license information
 
-# Nougat LaTeX OCR
-huggingface-hub>=0.16.0
-sentencepiece>=0.1.99
-protobuf>=3.20.0
+# Core dependencies
+torch>=2.0.0              # BSD-3-Clause License
+torchvision>=0.15.0       # BSD-3-Clause License
+transformers>=4.30.0      # Apache-2.0 License
+ultralytics>=8.0.0        # AGPL-3.0 License (Commercial use requires license)
+PyMuPDF>=1.23.0          # AGPL-3.0 License (May require commercial license)
+fitz                      # PyMuPDF alias
+loguru>=0.7.0            # MIT License
+Pillow>=10.0.0           # HPND License
+numpy>=1.24.0            # BSD-3-Clause License
+opencv-python>=4.8.0      # Apache-2.0 License
+
+# Nougat LaTeX OCR dependencies
+huggingface-hub>=0.16.0   # Apache-2.0 License
+sentencepiece>=0.1.99     # Apache-2.0 License
+protobuf>=3.20.0         # BSD-3-Clause License
 
 # Optional: DOCX support
-docx2pdf>=0.1.8
-pywin32>=305; sys_platform == 'win32'
+docx2pdf>=0.1.8          # MIT License
+pywin32>=305; sys_platform == 'win32'  # PSF License
 
 # Optional: OCR support
-paddlepaddle>=2.5.0
-paddleocr>=2.7.0
+paddlepaddle>=2.5.0      # Apache-2.0 License
+paddleocr>=2.7.0         # Apache-2.0 License

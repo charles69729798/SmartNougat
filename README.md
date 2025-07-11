@@ -130,10 +130,15 @@ python smartnougat_standalone.py document.docx -p 10-20
 
 ## License
 
-This project uses the following open-source components:
-- Nougat: MIT License
-- YOLO: AGPL-3.0 License
-- PyMuPDF: AGPL-3.0 License
+SmartNougat is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+### Third-Party Licenses
+This project uses several open-source libraries. See [LICENSE_NOTICE.md](LICENSE_NOTICE.md) for detailed license information.
+
+**Important for Commercial Use:**
+- YOLO models require a commercial license from Ultralytics
+- PyMuPDF may require a commercial license for certain use cases
+- Please review all component licenses before commercial deployment
 
 ## Contributing
 
