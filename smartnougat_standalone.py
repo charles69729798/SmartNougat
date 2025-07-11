@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-SmartNougat Standalone - 완전히 독립적인 Nougat 기반 문서 처리 파이프라인
-MinerU/magic-pdf 의존성 없이 모든 기능 직접 구현
+SmartNougat Standalone - 독립적인 Nougat 기반 문서 처리 파이프라인
+PDF/DOCX에서 수식을 추출하고 LaTeX로 변환
 """
 
 import os
@@ -99,7 +99,7 @@ class SmartNougatStandalone:
         logger.info(f"SmartNougat이 {self.device}에서 초기화됩니다")
         
         # 모델 디렉토리
-        self.models_dir = models_dir or os.path.expanduser("~/.cache/mineru")
+        self.models_dir = models_dir or os.path.expanduser("~/.cache/smartnougat")
         
         # 모델 초기화
         self._init_models()
@@ -127,20 +127,19 @@ class SmartNougatStandalone:
             return None
             
         try:
-            # MinerU의 MFD 모델 경로들 시도
+            # PDF-Extract-Kit MFD 모델 경로들 시도
             possible_paths = [
-                # 새로 다운로드한 모델
-                "C:/git/mineru-latex-converter/pdf-extract-kit-models/models/MFD/YOLO/yolo_v8_ft.pt",
-                "/mnt/c/git/mineru-latex-converter/pdf-extract-kit-models/models/MFD/YOLO/yolo_v8_ft.pt",
-                # 기존 경로들
-                "/mnt/c/git/mineru-latex-converter/mineru_env_new/Lib/site-packages/magic_pdf/resources/model/yolo_v8_formula_det_ft/weights/best.pt",
-                "/mnt/c/Users/charles/.cache/mineru/models/yolo_v8_formula_det_ft/weights/best.pt",
-                "C:/Users/charles/.cache/mineru/models/yolo_v8_formula_det_ft/weights/best.pt",
+                # 현재 디렉토리의 모델
+                "pdf-extract-kit-models/models/MFD/YOLO/yolo_v8_ft.pt",
+                "./pdf-extract-kit-models/models/MFD/YOLO/yolo_v8_ft.pt",
+                # 사용자 홈의 모델
+                os.path.expanduser("~/pdf-extract-kit-models/models/MFD/YOLO/yolo_v8_ft.pt"),
+                # 캐시 디렉토리
                 os.path.join(self.models_dir, "yolo_v8_formula_det_ft/weights/best.pt"),
                 os.path.join(self.models_dir, "yolo_v8_formula_det_ft.pt"),
-                # 다운로드된 파일명
-                "/mnt/c/git/mineru-latex-converter/yolo_v8_formula_det_ft.pt",
-                "C:/git/mineru-latex-converter/yolo_v8_formula_det_ft.pt"
+                # Windows 경로들
+                "C:/pdf-extract-kit-models/models/MFD/YOLO/yolo_v8_ft.pt",
+                "C:/Users/Public/pdf-extract-kit-models/models/MFD/YOLO/yolo_v8_ft.pt"
             ]
             
             mfd_weight = None
@@ -1038,7 +1037,7 @@ class SmartNougatStandalone:
 def main():
     """CLI 인터페이스"""
     parser = argparse.ArgumentParser(
-        description="SmartNougat Standalone - MinerU 없는 독립 실행형 문서 처리"
+        description="SmartNougat Standalone - 독립 실행형 문서 처리"
     )
     parser.add_argument('input', help='입력 파일 경로 (PDF/DOCX)')
     parser.add_argument('-o', '--output', default='./output', help='출력 디렉토리')
