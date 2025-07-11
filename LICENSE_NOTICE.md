@@ -3,13 +3,6 @@
 ## SmartNougat License
 SmartNougat is licensed under the MIT License. See [LICENSE](LICENSE) file.
 
-## Independence Declaration
-SmartNougat is an independent project that:
-- Does NOT use or contain code from MinerU/magic-pdf
-- Implements all functionality from scratch
-- Uses only publicly available models and libraries
-- Has no dependencies on MinerU/magic-pdf
-
 ## Third-Party Licenses
 
 This project uses the following open-source libraries:

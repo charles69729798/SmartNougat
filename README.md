@@ -2,8 +2,6 @@
 
 Standalone document processing with Nougat - Extract formulas from PDF/DOCX and convert to LaTeX
 
-**Note:** SmartNougat is an independent implementation that does not use or depend on MinerU/magic-pdf code. All functionality has been implemented from scratch using publicly available libraries and models.
-
 ## Overview
 
 SmartNougat is a powerful document processing tool that extracts mathematical formulas from PDF and DOCX files and converts them to LaTeX format. It uses state-of-the-art deep learning models for formula detection and recognition.
