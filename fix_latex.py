@@ -178,7 +178,8 @@ class LaTeXFixer:
                     # 변형된 형태 체크 (예: _mP' → _m{P')
                     elif left_side.replace("'", "") in latex[numerator_start:numerator_start+len(left_side)+5]:
                         # 더 복잡한 패턴 처리
-                        pattern = f"\\\\frac{{{re.escape(left_side).replace('_', '_[^{{]*{{?').replace('^', '\\^')}"
+                        escaped_left = re.escape(left_side).replace('_', '_[^{]*{?').replace('^', '\\^')
+                        pattern = f"\\\\frac{{{escaped_left}"
                         latex = re.sub(pattern, r'\\frac{', latex)
                         fixes.append("Fixed complex equation duplication")
         
