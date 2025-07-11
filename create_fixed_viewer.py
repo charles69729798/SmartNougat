@@ -401,7 +401,7 @@ def create_fixed_viewer(output_dir, scale=1.5):
     with open(html_path, 'w', encoding='utf-8') as f:
         f.write(html_content)
     
-    print(f"✅ Fixed HTML viewer created: {html_path}")
+    print(f"[Success] Fixed HTML viewer created: {html_path}")
     return True
 
 
