@@ -17,26 +17,20 @@ SmartNougat is a powerful document processing tool that extracts mathematical fo
 
 ## Installation
 
-### Prerequisites
-- Python 3.8 or higher
-- CUDA-capable GPU (optional, for faster processing)
-
-### Step 1: Install Dependencies
-```bash
-pip install -r requirements.txt
+### Quick Start for Windows Users
+For Windows 10/11 users, simply run:
+```cmd
+install_windows.bat
 ```
 
-### Step 2: Install Nougat LaTeX OCR
-```bash
-git clone https://github.com/Norm/nougat-latex-ocr.git
-cd nougat-latex-ocr
-pip install -e .
-```
+For detailed instructions:
+- 📖 [English Installation Guide](INSTALL_GUIDE.md)
+- 📖 [한국어 설치 가이드](INSTALL_GUIDE_KR.md)
 
-### Step 3: Download MFD Model
-```python
-python download_mfd_model.py
-```
+### Manual Installation
+1. Install dependencies: `pip install -r requirements.txt`
+2. Clone and install Nougat LaTeX OCR
+3. Download MFD model: `python download_mfd_model.py`
 
 ## Usage
 
