@@ -49,7 +49,7 @@
 
 3. **Nougat LaTeX OCR 설치**
    ```cmd
-   git clone https://github.com/Norm/nougat-latex-ocr.git
+   git clone https://github.com/NormXU/nougat-latex-ocr.git
    cd nougat-latex-ocr
    pip install -e .
    cd ..

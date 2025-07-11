@@ -34,16 +34,26 @@ try:
         files = os.listdir(mfd_path)
         print(f"다운로드된 파일들: {files}")
         
-        # weights.pt 파일 찾기
-        weights_path = os.path.join(mfd_path, "weights.pt")
-        if os.path.exists(weights_path):
-            print(f"MFD 모델 weights 경로: {weights_path}")
-            
-            # smartnougat_standalone.py 수정 안내
-            print("\n다음 경로를 smartnougat_standalone.py의 possible_paths에 추가하세요:")
-            print(f'"{os.path.abspath(weights_path)}"')
-        else:
-            print("weights.pt 파일을 찾을 수 없습니다.")
+        # weights.pt 또는 yolo_v8_ft.pt 파일 찾기
+        weights_found = False
+        for filename in files:
+            if filename.endswith('.pt'):
+                weights_path = os.path.join(mfd_path, filename)
+                print(f"MFD 모델 파일 발견: {weights_path}")
+                weights_found = True
+                
+                # weights.pt로 복사 (필요한 경우)
+                if filename != "weights.pt":
+                    weights_dest = os.path.join(mfd_path, "weights.pt")
+                    import shutil
+                    try:
+                        shutil.copy2(weights_path, weights_dest)
+                        print(f"weights.pt로 복사 완료: {weights_dest}")
+                    except Exception as e:
+                        print(f"복사 중 오류: {e}")
+                
+        if not weights_found:
+            print("YOLO 모델 파일(.pt)을 찾을 수 없습니다.")
             
 except Exception as e:
     print(f"오류 발생: {e}")

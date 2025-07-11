@@ -235,7 +235,7 @@ echo.
 REM Install Nougat LaTeX OCR
 echo Installing Nougat LaTeX OCR...
 if not exist "nougat-latex-ocr" (
-    git clone https://github.com/Norm/nougat-latex-ocr.git
+    git clone https://github.com/NormXU/nougat-latex-ocr.git
     if errorlevel 1 (
         echo ERROR: Failed to clone Nougat LaTeX OCR
         echo Please check your internet connection

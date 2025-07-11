@@ -158,7 +158,7 @@ REM Install Nougat LaTeX OCR
 echo.
 echo [설치] Nougat LaTeX OCR...
 if not exist "nougat-latex-ocr" (
-    git clone https://github.com/Norm/nougat-latex-ocr.git
+    git clone https://github.com/NormXU/nougat-latex-ocr.git
 )
 cd nougat-latex-ocr
 python -m pip install -e .

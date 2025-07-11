@@ -83,7 +83,7 @@ if exist nougat-latex-ocr (
     echo Nougat LaTeX OCR already exists, skipping clone...
 ) else (
     echo Cloning Nougat LaTeX OCR repository...
-    git clone https://github.com/Norm/nougat-latex-ocr.git
+    git clone https://github.com/NormXU/nougat-latex-ocr.git
     if errorlevel 1 (
         echo ERROR: Failed to clone Nougat LaTeX OCR
         echo Please check your internet connection and git installation
