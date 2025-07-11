@@ -1060,12 +1060,13 @@ def create_fixed_md(txt_dir):
     # Create a mapping of original LaTeX to fixed LaTeX
     latex_mapping = {}
     for item in fixed_data:
-        if item.get('latex_original'):
-            # If there was a fix, map original to fixed
-            latex_mapping[item['latex_original']] = item['latex']
-        else:
-            # If no fix, keep the same
-            latex_mapping[item['latex']] = item['latex']
+        if 'latex' in item:  # Check if latex key exists
+            if item.get('latex_original'):
+                # If there was a fix, map original to fixed
+                latex_mapping[item['latex_original']] = item['latex']
+            else:
+                # If no fix, keep the same
+                latex_mapping[item['latex']] = item['latex']
     
     # Replace LaTeX in markdown
     fixed_md = original_md
