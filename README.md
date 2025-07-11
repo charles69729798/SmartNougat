@@ -18,7 +18,16 @@ SmartNougat is a powerful document processing tool that extracts mathematical fo
 ## Installation
 
 ### Quick Start for Windows Users
-For Windows 10/11 users, simply run:
+
+#### Recommended: Smart Install (Auto-detects virtual environment)
+```cmd
+smart_install.bat
+```
+- Automatically uses virtual environment if available
+- Falls back to regular install if venv is restricted
+- Prevents dependency conflicts
+
+#### Alternative: Direct Install
 ```cmd
 install_windows.bat
 ```
