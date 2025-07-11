@@ -1,0 +1,24 @@
+# Core dependencies for SmartNougat
+torch>=2.0.0
+torchvision>=0.15.0
+transformers>=4.30.0
+ultralytics>=8.0.0
+PyMuPDF>=1.23.0
+fitz  # PyMuPDF
+loguru>=0.7.0
+Pillow>=10.0.0
+numpy>=1.24.0
+opencv-python>=4.8.0
+
+# Nougat LaTeX OCR
+huggingface-hub>=0.16.0
+sentencepiece>=0.1.99
+protobuf>=3.20.0
+
+# Optional: DOCX support
+docx2pdf>=0.1.8
+pywin32>=305; sys_platform == 'win32'
+
+# Optional: OCR support
+paddlepaddle>=2.5.0
+paddleocr>=2.7.0
