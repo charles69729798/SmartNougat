@@ -1146,7 +1146,7 @@ def main():
                         
                         # Fixed HTML viewer 생성
                         viewer_result = subprocess.run(
-                            [sys.executable, "create_fixed_viewer.py", str(result['output_dir'])],
+                            [sys.executable, "create_fixed_viewer_v2.py", str(result['output_dir'])],
                             capture_output=True,
                             text=True
                         )

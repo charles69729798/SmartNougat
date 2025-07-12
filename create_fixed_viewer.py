@@ -254,10 +254,28 @@ def create_fixed_viewer(output_dir, scale=1.5):
 '''
     
     # Add each formula result
-    for result in results:
-        # Get image path
-        image_filename = result.get('filename', f"formula_page{result.get('page_index', 0)}_{result.get('index', 0):03d}.png")
-        image_path = output_dir / "images" / image_filename
+    formula_index = 0
+    for page_data in results:
+        if isinstance(page_data, dict) and 'layout_dets' in page_data:
+            # Handle SmartNougat format
+            page_idx = page_data.get('page_idx', 0)
+            for det in page_data.get('layout_dets', []):
+                result = {
+                    'index': formula_index,
+                    'page_index': page_idx,
+                    'latex': det.get('latex', ''),
+                    'latex_original': det.get('latex_original'),
+                    'latex_fixes': det.get('latex_fixes', []),
+                    'category_type': det.get('category_id', ''),
+                    'filename': f"formula_page{page_idx}_{formula_index:03d}.png"
+                }
+                _add_formula_card(html_content, result, output_dir)
+                formula_index += 1
+        else:
+            # Handle original format
+            result = page_data
+            _add_formula_card(html_content, result, output_dir)
+            formula_index += 1
         
         # Read image as base64
         img_base64 = ""
