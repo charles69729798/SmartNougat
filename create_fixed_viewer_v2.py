@@ -147,9 +147,6 @@ def create_fixed_viewer(output_dir, scale=1.5):
         }}
         
         .latex-panel {{
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
             margin: 20px 0;
         }}
         
@@ -158,6 +155,7 @@ def create_fixed_viewer(output_dir, scale=1.5):
             padding: 15px;
             border-radius: 4px;
             border: 2px solid #ddd;
+            margin-bottom: 10px;
         }}
         
         .latex-box.original {{
@@ -202,6 +200,50 @@ def create_fixed_viewer(output_dir, scale=1.5):
             min-height: 60px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            position: relative;
+        }}
+        
+        .math-container {{
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }}
+        
+        .zoom-controls {{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            background: rgba(255,255,255,0.9);
+            padding: 5px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }}
+        
+        .zoom-btn {{
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        
+        .zoom-btn:hover {{
+            background: #f0f0f0;
+        }}
+        
+        .zoom-level {{
+            padding: 0 8px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            min-width: 45px;
             justify-content: center;
         }}
         
@@ -257,33 +299,92 @@ def create_fixed_viewer(output_dir, scale=1.5):
         html_content += '''
         <div class="latex-panel">'''
         
-        # Original LaTeX box
+        # Original LaTeX box (코드만)
         html_content += f'''
             <div class="latex-box original">
                 <h4>원본 LaTeX / Original LaTeX</h4>
                 <div class="latex-code">{html.escape(result['original_latex'])}</div>
-                <div class="rendered-math">
-                    $${result['original_latex']}$$
-                </div>
             </div>'''
         
-        # Fixed LaTeX box
+        # Fixed LaTeX box (코드만)
         fixed_label = "수정된 LaTeX / Fixed LaTeX" if result['was_fixed'] else "동일 / Same"
         html_content += f'''
             <div class="latex-box fixed">
                 <h4>{fixed_label}</h4>
                 <div class="latex-code">{html.escape(result['fixed_latex'])}</div>
-                <div class="rendered-math">
-                    $${result['fixed_latex']}$$
-                </div>
             </div>'''
         
         html_content += '''
+        </div>
+        
+        <!-- 수정된 버전 렌더링 -->
+        <div class="rendered-math" id="render-''' + str(result['index']) + '''">
+            <h4>렌더링 결과:</h4>
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomOut(''' + str(result['index']) + ''')">−</button>
+                <span class="zoom-level" id="zoom-level-''' + str(result['index']) + '''">100%</span>
+                <button class="zoom-btn" onclick="zoomIn(''' + str(result['index']) + ''')">+</button>
+                <button class="zoom-btn" onclick="resetZoom(''' + str(result['index']) + ''')" title="Reset">⟲</button>
+            </div>
+            <div class="math-container" id="math-container-''' + str(result['index']) + '''">'''
+        
+        html_content += f'''
+                $${result['fixed_latex']}$$
+            </div>
         </div>
     </div>
 '''
     
     html_content += '''
+    
+    <script>
+        const zoomLevels = {};
+        
+        function zoomIn(id) {
+            const current = zoomLevels[id] || 100;
+            const newZoom = Math.min(current + 10, 300);
+            zoomLevels[id] = newZoom;
+            applyZoom(id, newZoom);
+        }
+        
+        function zoomOut(id) {
+            const current = zoomLevels[id] || 100;
+            const newZoom = Math.max(current - 10, 50);
+            zoomLevels[id] = newZoom;
+            applyZoom(id, newZoom);
+        }
+        
+        function resetZoom(id) {
+            zoomLevels[id] = 100;
+            applyZoom(id, 100);
+        }
+        
+        function applyZoom(id, zoom) {
+            const container = document.getElementById(`math-container-${id}`);
+            const zoomDisplay = document.getElementById(`zoom-level-${id}`);
+            
+            if (container) {
+                container.style.transform = `scale(${zoom / 100})`;
+                zoomDisplay.textContent = `${zoom}%`;
+            }
+        }
+        
+        // Ctrl + wheel zoom
+        document.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                const mathElement = e.target.closest('.rendered-math');
+                if (mathElement) {
+                    const id = mathElement.id.replace('render-', '');
+                    if (e.deltaY < 0) {
+                        zoomIn(id);
+                    } else {
+                        zoomOut(id);
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
 '''

@@ -845,9 +845,17 @@ class SmartNougatStandalone:
                 
             source_pdf = None
             for pdf in pdf_files:
-                if "pages_" not in pdf.name:
+                # pages_가 있는 파일을 우선적으로 선택 (추출된 페이지)
+                if "pages_" in pdf.name:
                     source_pdf = pdf
                     break
+            
+            # pages_가 없으면 원본 PDF 사용
+            if not source_pdf:
+                for pdf in pdf_files:
+                    if pdf.name.endswith('.pdf') and "layout" not in pdf.name:
+                        source_pdf = pdf
+                        break
                     
             if not source_pdf:
                 return
