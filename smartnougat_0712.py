@@ -1101,6 +1101,7 @@ def main():
     parser.add_argument('input', help='입력 파일 경로 (PDF/DOCX)')
     parser.add_argument('-o', '--output', default='./output', help='출력 디렉토리')
     parser.add_argument('-p', '--pages', help='페이지 범위 (예: 1-5 또는 1,3,5)')
+    parser.add_argument('--local-mathjax', action='store_true', help='로컬 MathJax 사용 (오프라인 모드)')
     parser.add_argument('--device', default='auto', choices=['auto', 'cuda', 'cpu'])
     parser.add_argument('--debug', action='store_true', help='디버그 모드')
     
@@ -1152,9 +1153,16 @@ def main():
                         create_fixed_md(txt_dir)
                         print("[✓] output_fixed.md 생성 완료")
                         
-                        # Fixed HTML viewer 생성
+                        # Fixed HTML viewer 생성 (기본적으로 로컬 MathJax 자동 감지)
+                        viewer_cmd = [sys.executable, "create_fixed_viewer_simple.py", str(result['output_dir'])]
+                        
+                        # 사용자가 명시적으로 옵션을 지정한 경우에만 추가
+                        if hasattr(args, 'local_mathjax') and args.local_mathjax:
+                            viewer_cmd.append("--local-mathjax")
+                        # 기본값은 자동 감지이므로 아무것도 추가하지 않음
+                        
                         viewer_result = subprocess.run(
-                            [sys.executable, "create_fixed_viewer_v2.py", str(result['output_dir'])],
+                            viewer_cmd,
                             capture_output=True,
                             text=True
                         )

@@ -164,6 +164,29 @@ cd nougat-latex-ocr
 python -m pip install -e .
 cd ..
 
+REM Download MathJax for offline rendering
+echo.
+echo [다운로드] MathJax (오프라인 렌더링용)...
+
+REM output 폴더에도 MathJax 설치 (HTML 파일에서 쉽게 접근)
+if not exist "output\mathjax\package\es5\tex-svg.js" (
+    if not exist "output\mathjax" mkdir output\mathjax
+    echo MathJax를 output 폴더에 다운로드 중... (약 15MB)
+    
+    REM Direct download using PowerShell
+    powershell -Command "& {$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -Uri 'https://registry.npmjs.org/mathjax/-/mathjax-3.2.2.tgz' -OutFile 'output\mathjax\mathjax.tgz'}"
+    
+    REM Extract using tar (Windows 10 1803+)
+    cd output\mathjax
+    tar -xzf mathjax.tgz
+    del mathjax.tgz
+    cd ..\..
+    
+    echo ✓ MathJax 다운로드 완료! (output/mathjax)
+) else (
+    echo ✓ MathJax가 이미 설치되어 있습니다.
+)
+
 echo.
 echo ================================================================================
 echo ✅ SmartNougat 설치 완료!

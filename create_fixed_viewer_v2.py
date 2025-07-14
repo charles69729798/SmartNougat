@@ -8,11 +8,107 @@ import json
 import html
 import base64
 import sys
+import os
+import subprocess
 from pathlib import Path
 from datetime import datetime
 
 
-def create_fixed_viewer(output_dir, scale=1.5):
+def check_and_install_mathjax():
+    """Check if MathJax is installed, install if not"""
+    # Get the directory where this script is located
+    script_dir = Path(__file__).parent
+    
+    # Check multiple possible locations
+    # Priority: output/mathjax (for easy HTML access)
+    possible_paths = [
+        script_dir / "output" / "mathjax" / "package" / "es5" / "tex-svg.js",
+        script_dir / "output" / "mathjax" / "node_modules" / "mathjax" / "es5" / "tex-svg.js",
+        script_dir / "mathjax" / "package" / "es5" / "tex-svg.js",
+        script_dir / "mathjax" / "node_modules" / "mathjax" / "es5" / "tex-svg.js",
+    ]
+    
+    for path in possible_paths:
+        if path.exists():
+            return str(path.relative_to(script_dir))
+    
+    # MathJax not found, try to install
+    print("[!] MathJax가 설치되어 있지 않습니다. 자동 설치를 시작합니다...")
+    
+    # Create mathjax directory
+    mathjax_dir.mkdir(exist_ok=True)
+    
+    # Try npm first
+    npm_path = None
+    for cmd in ["npm", "npm.cmd"]:
+        try:
+            subprocess.run([cmd, "--version"], capture_output=True, check=True)
+            npm_path = cmd
+            break
+        except:
+            pass
+    
+    if npm_path:
+        print("[*] npm을 사용하여 MathJax를 설치합니다...")
+        try:
+            # Change to mathjax directory
+            os.chdir(mathjax_dir)
+            
+            # Initialize package.json
+            subprocess.run([npm_path, "init", "-y"], capture_output=True)
+            
+            # Install MathJax
+            result = subprocess.run([npm_path, "install", "mathjax@3"], 
+                                  capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                print("[✓] MathJax 설치 완료!")
+                # Return to original directory
+                os.chdir(script_dir)
+                
+                # Check again
+                for path in possible_paths:
+                    if path.exists():
+                        return str(path.relative_to(script_dir))
+            else:
+                print(f"[!] npm 설치 실패: {result.stderr}")
+        except Exception as e:
+            print(f"[!] npm 설치 중 오류: {e}")
+        finally:
+            os.chdir(script_dir)
+    
+    # Try PowerShell download as fallback
+    print("[*] PowerShell을 사용하여 MathJax를 다운로드합니다...")
+    try:
+        ps_cmd = [
+            "powershell", "-Command",
+            f"Invoke-WebRequest -Uri 'https://registry.npmjs.org/mathjax/-/mathjax-3.2.2.tgz' -OutFile '{mathjax_dir}/mathjax.tgz'"
+        ]
+        subprocess.run(ps_cmd, check=True)
+        
+        # Extract using tar
+        tar_cmd = ["tar", "-xzf", str(mathjax_dir / "mathjax.tgz"), "-C", str(mathjax_dir)]
+        subprocess.run(tar_cmd, check=True)
+        
+        # Remove tgz file
+        (mathjax_dir / "mathjax.tgz").unlink()
+        
+        print("[✓] MathJax 다운로드 및 압축 해제 완료!")
+        
+        # Check again
+        for path in possible_paths:
+            if path.exists():
+                return str(path.relative_to(script_dir))
+                
+    except Exception as e:
+        print(f"[!] PowerShell 다운로드 실패: {e}")
+    
+    # If all fails, return None
+    print("[!] MathJax 설치에 실패했습니다. CDN을 사용합니다.")
+    return None
+
+
+def create_fixed_viewer(output_dir, scale=1.5, use_local_mathjax=None):
     """Create HTML viewer for fixed LaTeX results"""
     
     output_dir = Path(output_dir)
@@ -71,6 +167,45 @@ def create_fixed_viewer(output_dir, scale=1.5):
                 })
                 formula_index += 1
     
+    # Determine MathJax source
+    # Calculate relative path from output HTML to mathjax
+    # HTML is at: output/[output_name]/result_viewer_fixed.html
+    # MathJax is at: output/mathjax/package/es5/tex-svg.js
+    # So we need to go up 1 level (../) to output, then to mathjax
+    
+    if use_local_mathjax is None:
+        # Auto-detect: try local first
+        local_path = check_and_install_mathjax()
+        if local_path:
+            # Check if it's in output/mathjax (go up 1 level)
+            if local_path.startswith("output/mathjax"):
+                mathjax_src = f"../{local_path.replace('output/', '').replace(os.sep, '/')}"
+            else:
+                # Otherwise go up 2 levels
+                mathjax_src = f"../../{local_path.replace(os.sep, '/')}"
+            print(f"[✓] 로컬 MathJax 사용: {local_path}")
+        else:
+            mathjax_src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+            print("[!] CDN MathJax 사용 (인터넷 연결 필요)")
+    elif use_local_mathjax:
+        # Force local
+        local_path = check_and_install_mathjax()
+        if local_path:
+            # Check if it's in output/mathjax (go up 1 level)
+            if local_path.startswith("output/mathjax"):
+                mathjax_src = f"../{local_path.replace('output/', '').replace(os.sep, '/')}"
+            else:
+                # Otherwise go up 2 levels
+                mathjax_src = f"../../{local_path.replace(os.sep, '/')}"
+            print(f"[✓] 로컬 MathJax 사용: {local_path}")
+        else:
+            print("[!] 로컬 MathJax를 찾을 수 없어 CDN을 사용합니다.")
+            mathjax_src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+    else:
+        # Force CDN
+        mathjax_src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+        print("[*] CDN MathJax 사용")
+    
     # Generate HTML
     html_content = f'''<!DOCTYPE html>
 <html lang="ko">
@@ -97,7 +232,7 @@ def create_fixed_viewer(output_dir, scale=1.5):
             }}
         }};
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script id="MathJax-script" async src="{mathjax_src}"></script>
     
     <style>
         body {{
@@ -156,6 +291,26 @@ def create_fixed_viewer(output_dir, scale=1.5):
             border-radius: 4px;
             border: 2px solid #ddd;
             margin-bottom: 10px;
+            position: relative;
+        }}
+        
+        .copy-btn {{
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.8;
+        }}
+        
+        .copy-btn:hover {{
+            opacity: 1;
+            background: #0056b3;
         }}
         
         .latex-box.original {{
@@ -191,22 +346,44 @@ def create_fixed_viewer(output_dir, scale=1.5):
         }}
         
         .rendered-math {{
-            background: white;
+            background: #2563eb;
             padding: 20px;
             border-radius: 4px;
             margin-top: 10px;
             overflow-x: auto;
-            overflow-y: hidden;
+            overflow-y: auto;
+            max-width: 100%;
             min-height: 60px;
+            max-height: 400px;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+            border: 1px solid #1d4ed8;
+        }}
+        
+        .rendered-math .MathJax,
+        .rendered-math .MathJax_Display,
+        .rendered-math mjx-container,
+        .rendered-math mjx-container svg,
+        .rendered-math mjx-container svg g,
+        .rendered-math mjx-container svg path,
+        .rendered-math mjx-container svg text {{
+            color: white !important;
+            fill: white !important;
+            stroke: white !important;
+        }}
+        
+        .rendered-math mjx-container svg g[data-mml-node="math"] * {{
+            fill: white !important;
+            stroke: white !important;
         }}
         
         .math-container {{
             display: inline-block;
             transition: transform 0.2s ease;
+            max-width: 100%;
+            overflow: hidden;
         }}
         
         .zoom-controls {{
@@ -282,10 +459,14 @@ def create_fixed_viewer(output_dir, scale=1.5):
         category_class = 'category-inline' if category == 13 else 'category-block'
         category_name = 'Inline' if category == 13 else 'Block'
         
+        # Extract det_idx from filename for display
+        # filename format: formula_page0_003.png -> 003
+        det_num = int(result['filename'].split('_')[-1].replace('.png', ''))
+        
         html_content += f'''
     <div class="formula-card">
         <div class="card-header">
-            <span><strong>#{result['index'] + 1}</strong> Page {result['page_index'] + 1} | <span class="{category_class}">{category_name} Formula</span></span>
+            <span><strong>#{det_num}</strong> Page {result['page_index'] + 1} | <span class="{category_class}">{category_name} Formula</span></span>
             <span>{('🔧 Fixed' if result['was_fixed'] else '✓ Original')}</span>
         </div>
         '''
@@ -303,7 +484,8 @@ def create_fixed_viewer(output_dir, scale=1.5):
         html_content += f'''
             <div class="latex-box original">
                 <h4>원본 LaTeX / Original LaTeX</h4>
-                <div class="latex-code">{html.escape(result['original_latex'])}</div>
+                <div class="latex-code" id="original-{result['index']}">{html.escape(result['original_latex'])}</div>
+                <button class="copy-btn" onclick="copyLatexText('original-{result['index']}')">복사</button>
             </div>'''
         
         # Fixed LaTeX box (코드만)
@@ -311,7 +493,8 @@ def create_fixed_viewer(output_dir, scale=1.5):
         html_content += f'''
             <div class="latex-box fixed">
                 <h4>{fixed_label}</h4>
-                <div class="latex-code">{html.escape(result['fixed_latex'])}</div>
+                <div class="latex-code" id="fixed-{result['index']}">{html.escape(result['fixed_latex'])}</div>
+                <button class="copy-btn" onclick="copyLatexText('fixed-{result['index']}')">복사</button>
             </div>'''
         
         html_content += '''
@@ -319,7 +502,7 @@ def create_fixed_viewer(output_dir, scale=1.5):
         
         <!-- 수정된 버전 렌더링 -->
         <div class="rendered-math" id="render-''' + str(result['index']) + '''">
-            <h4>렌더링 결과:</h4>
+            <h4 style="position: absolute; top: 10px; left: 15px; margin: 0; font-size: 14px; color: #bfdbfe;">렌더링 결과:</h4>
             <div class="zoom-controls">
                 <button class="zoom-btn" onclick="zoomOut(''' + str(result['index']) + ''')">−</button>
                 <span class="zoom-level" id="zoom-level-''' + str(result['index']) + '''">100%</span>
@@ -369,6 +552,103 @@ def create_fixed_viewer(output_dir, scale=1.5):
             }
         }
         
+        // Copy LaTeX text to clipboard
+        function copyLatexText(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent || element.innerText;
+            const btn = event.target;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showCopySuccess(btn);
+                }).catch(function(err) {
+                    fallbackCopyTextToClipboard(text, btn);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text, btn);
+            }
+        }
+        
+        // Fallback copy method for older browsers
+        function fallbackCopyTextToClipboard(text, btn) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopySuccess(btn);
+                } else {
+                    alert('복사 실패');
+                }
+            } catch (err) {
+                alert('복사 실패: ' + err);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+        
+        // Show copy success feedback
+        function showCopySuccess(btn) {
+            const originalText = btn.textContent;
+            btn.textContent = '복사완료!';
+            btn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '#007bff';
+            }, 1500);
+        }
+        
+        // Auto-fit math content to container width
+        function autoFitMath() {
+            document.querySelectorAll('.math-container').forEach((container, index) => {
+                const parent = container.closest('.rendered-math');
+                if (parent && container.scrollWidth > parent.clientWidth) {
+                    const scale = Math.min(1, (parent.clientWidth - 40) / container.scrollWidth);
+                    const id = index;
+                    zoomLevels[id] = Math.round(scale * 100);
+                    container.style.transform = `scale(${scale})`;
+                    
+                    const zoomDisplay = parent.querySelector('.zoom-level');
+                    if (zoomDisplay) {
+                        zoomDisplay.textContent = `${Math.round(scale * 100)}%`;
+                    }
+                }
+            });
+        }
+        
+        // Force white color for MathJax elements
+        function forceMathWhite() {
+            document.querySelectorAll('.rendered-math mjx-container svg').forEach(svg => {
+                svg.style.fill = 'white';
+                svg.style.color = 'white';
+                svg.querySelectorAll('*').forEach(element => {
+                    element.style.fill = 'white';
+                    element.style.stroke = 'white';
+                    element.style.color = 'white';
+                });
+            });
+        }
+        
+        // Auto-fit on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                autoFitMath();
+                forceMathWhite();
+            }, 1000); // Wait for MathJax to render
+        });
+        
+        // Re-fit on window resize
+        window.addEventListener('resize', autoFitMath);
+        
         // Ctrl + wheel zoom
         document.addEventListener('wheel', (e) => {
             if (e.ctrlKey) {
@@ -400,13 +680,30 @@ def create_fixed_viewer(output_dir, scale=1.5):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python create_fixed_viewer_v2.py <output_directory> [scale]")
+        print("Usage: python create_fixed_viewer_v2.py <output_directory> [scale] [--local-mathjax|--cdn-mathjax]")
+        print("  기본값: 로컬 MathJax 자동 감지 (없으면 자동 설치)")
+        print("  --local-mathjax: 로컬 MathJax 강제 사용")
+        print("  --cdn-mathjax: CDN MathJax 강제 사용")
         sys.exit(1)
     
     output_dir = sys.argv[1]
-    scale = float(sys.argv[2]) if len(sys.argv) > 2 else 1.5
     
-    if not create_fixed_viewer(output_dir, scale):
+    # Parse arguments
+    scale = 1.5
+    use_local_mathjax = None  # None = auto-detect
+    
+    for arg in sys.argv[2:]:
+        if arg == "--local-mathjax":
+            use_local_mathjax = True
+        elif arg == "--cdn-mathjax":
+            use_local_mathjax = False
+        else:
+            try:
+                scale = float(arg)
+            except ValueError:
+                pass
+    
+    if not create_fixed_viewer(output_dir, scale, use_local_mathjax):
         sys.exit(1)
 
 
