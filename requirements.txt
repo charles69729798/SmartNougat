@@ -25,3 +25,6 @@ pywin32>=305; sys_platform == 'win32'  # PSF License
 # Optional: OCR support
 paddlepaddle>=2.5.0      # Apache-2.0 License
 paddleocr>=2.7.0         # Apache-2.0 License
+
+# Optional: GUI support
+tkinterdnd2>=0.3.0       # MIT License (for drag and drop)
